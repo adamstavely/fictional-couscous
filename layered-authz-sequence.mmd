@@ -1,0 +1,33 @@
+sequenceDiagram
+  autonumber
+  actor U as User
+  participant S as STS + MFA
+  participant A as Application
+  participant T as Tyk Gateway
+  participant E as Enterprise PDP
+  participant M as Edge PDP (Cerbos)
+
+  Note over U,S: Authentication
+  U->>S: Sign in + MFA
+  S-->>U: Signed token
+
+  Note over U,M: Authorization
+  U->>A: Request + token
+  A->>T: Call + token
+  T->>T: Validate token (keys, audience, expiry)
+  T->>E: AuthZEN request
+  E-->>T: Permit (a deny ends the request here)
+  Note over T: Looks up mission attributes
+  T->>M: AuthZEN request with mission attributes
+  M-->>T: Permit, deny, or step-up
+  T->>T: Compose (deny-overrides) and log both verdicts
+
+  alt Permit
+    T-->>A: Permit, forward request
+    A-->>U: Response
+  else Step-up required
+    T-->>A: Step-up required
+    A-->>U: Re-authenticate
+    U->>S: Stronger MFA
+    S-->>U: New token, retry from step 3
+  end
