@@ -58,6 +58,38 @@ Authentication strength becomes a policy input, which strengthens enterprise aut
 
 For service-to-service calls, services use STS token exchange (RFC 8693) to obtain downstream-scoped tokens that preserve both the user and the calling service. Both decision points can then constrain which services may act on behalf of which users, closing the confused-deputy gap common to proxy designs.
 
+## Authorization surfaces
+
+Authorization is not always one HTTP request. Every surface ultimately answers the same question, **can user X operate on object Y**, but the mechanism must fit the shape of the work. A search that returns 10,000 objects must not trigger 10,000 dual decisions, and it must not return 10,000 objects and filter them afterward.
+
+The governing principle is **decide per subject, filter per object.** Subject-side constraints are computed once per user or session, then pushed down into the data store as a filter, so the store returns only what the user may see. Individual object decisions are reserved for small, bounded sets.
+
+| Surface | Question | Mechanism | Enterprise contribution | Mission contribution |
+| --- | --- | --- | --- | --- |
+| Single action | Can Jane print this file? | One composed decision at the gateway | Decision on the request | Decision on the request |
+| Interface rendering | Which actions can Jane take on the items on this page? | One batch evaluation for a bounded set, routed through the gateway | Batch decision or a cached subject-level answer | Batch decision |
+| Search and listing | Which of these objects may Jane see? | Query planning converted to a data store filter before the query runs | One subject-level answer: may Jane search this mission's data, and up to which marking | A filter condition from the Cerbos query plan, such as case IDs on Jane's assignments |
+| Exports and long-running jobs | May this job act on these objects for Jane? | Job runs on Jane's behalf through token exchange, applies the same filter, and re-checks before delivery | Subject-level answer at job start and before delivery | Filter at selection; decision at delivery |
+| Events and subscriptions | May Jane receive this stream of updates? | Decision at subscription time; each message filtered by its attributes; subscriptions re-evaluated when attributes change | Subscription decision | Subscription decision and message filter |
+| AI retrieval and agents | May this agent retrieve or act on this content for Jane? | Retrieval uses the same pushed-down filter before content reaches the model; tool calls are decided like any other action | Same as search and actions | Same as search and actions |
+| Derived and cached data | Who may see a summary, index, or copy built from protected objects? | Derived artifacts inherit the most restrictive attributes of their sources and are filtered like the originals | Marking vocabulary for inherited labels | Mission tags carried forward |
+
+**How search works without 10,000 decisions**
+
+1. When Jane searches, the gateway asks the enterprise one subject-level question: may Jane search this mission's data, and up to which marking? That is one decision, cached briefly for the session.
+2. The gateway asks Cerbos for a query plan rather than a decision. Cerbos returns a condition, such as case ID in Jane's assigned cases and not in any screened cases.
+3. The two are combined into a single filter and translated into the data store's native query, such as an Elasticsearch boolean filter on marking, mission tag, and case ID.
+4. The data store returns only permitted objects. Counts, facets, and aggregations are computed after filtering, so they cannot reveal the existence of objects Jane may not see.
+5. If a residual rule cannot be expressed as a filter, it is evaluated only on the page of results actually displayed, through one batch call.
+
+**Requirements this places on the design**
+
+- **Objects must carry their authorization attributes.** Every indexed object includes the marking, mission tag, case ID, and any other attribute a filter needs. An attribute that is not indexed cannot be filtered on.
+- **Filters come from policy, not from application code.** Filters are generated from the same Cerbos policies that make individual decisions, never re-implemented by hand in each application.
+- **Filters and decisions must agree.** Automated tests sample objects and verify that the generated filter and the individual decision give the same answer, so the two paths cannot drift apart.
+- **Every surface is behind an enforcement point.** Direct data access, analytics tools, and bulk exports either go through the gateway or apply filters generated from the same policies. Any surface without one is a path around the design.
+- **Enterprise answers are expressed at the subject level for collections.** If the enterprise decision service cannot produce query plans, its contribution to collection surfaces is a subject-level ceiling, such as the highest marking Jane may access within this mission, which the gateway converts into a filter.
+
 ## What enterprise ICAM gains
 
 - **Authority extended, not shared.** The enterprise decision is evaluated first on every request and cannot be overridden. ICAM's reach extends into mission decisions it does not have to author.
@@ -206,18 +238,56 @@ Other missions may need our mission-derived attributes alongside their own and t
 
 ## Control mapping
 
-A preliminary mapping to NIST SP 800-53 Rev. 5, to be validated with the ISSO and authorizing official.
+A preliminary mapping to NIST SP 800-53 Rev. 5, to be validated with the ISSO and authorizing official. Enhancement selection varies with each system's baseline and tailoring, so the specific enhancements listed here should be confirmed before they appear in any authorization package.
 
-| Control | How the pattern addresses it |
+A major benefit of the pattern is control inheritance. Enterprise ICAM and the teams operating the gateway and mission decision point act as common control providers, so product teams inherit these controls rather than re-implementing and re-proving them in every system. The inheritance column uses three categories:
+
+- **Common:** provided once by enterprise ICAM, the platform team, or the mission, and fully inherited by product systems.
+- **Hybrid:** provided in part by the pattern, with a defined remaining responsibility for each product team.
+- **System-specific:** owned entirely by the product team.
+
+| Control | How the pattern addresses it | Provider | Inheritance |
+| --- | --- | --- | --- |
+| AC-2 Account management | Enterprise accounts are unchanged; mission entitlements carry approval, expiry, and recertification | Enterprise ICAM; mission data steward policy shop | Hybrid |
+| AC-3 Access enforcement | Tyk enforces the composed decision on every request; applications enforce in-app operations through the same decision layer | Platform team; product teams | Hybrid |
+| AC-3(7) Role-based access control | Mission roles evaluated in mission policy | Mission | Common |
+| AC-3(8) Revocation of access authorizations | Entitlement revocations take effect within the stated freshness window; the kill switch reverts a mission to enterprise-only decisions | Enterprise ICAM; mission | Common |
+| AC-3(9) Controlled release | Release, print, and export decisions with obligations such as watermarking; applications honor the obligations | Mission; product teams | Hybrid |
+| AC-3(10) Audited override of access control mechanisms | Break-glass access with justification, alerting, and review | Platform team; enterprise ICAM | Common |
+| AC-3(13) Attribute-based access control | Decisions derived from governed subject, resource, and environment attributes | Enterprise ICAM; mission | Common |
+| AC-5 Separation of duties | Separations defined in the RACI; workflow separations such as author cannot approve enforced in policy; applications model the workflow states | Engineering governance board; mission; product teams | Hybrid |
+| AC-6 Least privilege | Envelopes narrowed by mission policy; applications remain responsible for their own service accounts and administrative functions | Enterprise ICAM; mission; product teams | Hybrid |
+| AC-6(7) Review of user privileges | Periodic recertification of mission entitlements | Mission data steward policy shop | Common |
+| AC-6(9) Log use of privileged functions | Every decision, including privileged actions and overrides, logged with both verdicts | Platform team | Common |
+| AC-16 Security and privacy attributes | Single authoritative source per attribute, governed registry, schema-enforced use; applications label objects at creation and propagate attributes | Enterprise ICAM; mission; product teams | Hybrid |
+| AC-21 Information sharing | Governed cross-mission attribute sharing and decision delegation | Mission | Common |
+| AC-24 Access control decisions | Two standardized decision points with deny-overrides composition, enterprise first | Enterprise ICAM; mission; platform team | Common |
+| AC-25 Reference monitor | The gateway is always invoked, isolated, and small enough to test; every authorization surface sits behind it; applications must not bypass it | Platform team; product teams | Hybrid |
+| AU-2 and AU-12 Event logging and audit record generation | Both verdicts logged per request with a correlation ID | Platform team | Common |
+| AU-3 Content of audit records | Records include subject, action, resource, attribute values used, both verdicts, and correlation ID | Platform team | Common |
+| AU-6 Audit record review, analysis, and reporting | Enterprise ICAM reviews decision logs; mission reviews divergence and override reports | Enterprise ICAM; mission | Common |
+| CA-7 Continuous monitoring | Decision logs and shadow-mode divergence reports provide ongoing evidence | Platform team; enterprise ICAM | Common |
+| CM-3 Configuration change control | Mission policies change only through tested, reviewed, approved releases | Engineering governance board | Common |
+| CM-5 Access restrictions for change | Policy repository restricted to authorized authors, with approval required to release | Platform team; engineering governance board | Common |
+| IA-2 Identification and authentication | Enterprise STS and MFA unchanged and remain the sole identity source | Enterprise ICAM | Common |
+| IA-9 Service identification and authentication | Gateway service identity verified, for example through mTLS, and envelopes bound to the registered gateway | Platform team; enterprise ICAM | Common |
+| IA-11 Re-authentication | Step-up authentication required by policy for sensitive actions and performed by the enterprise STS | Enterprise ICAM; mission | Common |
+| SC-16 Transmission of security and privacy attributes | Attributes travel with requests and are carried on indexed objects; applications ensure their indexes include them | Platform team; product teams | Hybrid |
+| SI-4 System monitoring | Decision logs, overrides, and divergence reports feed enterprise monitoring | Platform team; enterprise ICAM | Common |
+
+**Access control responsibilities product teams retain**
+
+| Control | Product team responsibility |
 | --- | --- |
-| AC-3 Access enforcement | Tyk enforces the composed decision on every request; applications carry no authorization logic |
-| AC-6 Least privilege | Mission rules narrow access within enterprise-approved envelopes |
-| AC-16 Security and privacy attributes | Single authoritative source per attribute, governed registry, schema-enforced use in policy |
-| AC-24 Access control decisions | Two standardized decision points with deny-overrides composition, enterprise first |
-| AU-2 and AU-12 Event logging and audit record generation | Both verdicts logged per request with a correlation ID, available to ICAM |
-| CA-7 Continuous monitoring | Decision logs and shadow-mode divergence reports provide ongoing evidence |
-| CM-3 Configuration change control | Mission policies change only through tested, reviewed, approved releases |
-| IA-2 Identification and authentication | Enterprise STS and MFA unchanged and remain the sole identity source; step-up strengthens assurance for sensitive actions |
+| AC-2 Account management | Any local or service accounts the application creates. The goal is none beyond service identities. |
+| AC-3 Access enforcement | Operations the gateway cannot see, such as internal service calls, background jobs, and GraphQL resolvers, must call the decision layer and apply generated filters, never local shortcuts. |
+| AC-3(9) Controlled release | Honoring obligations returned with a decision, such as applying a watermark on print or export. |
+| AC-6 Least privilege | Least privilege for the application's own service accounts, database credentials, and administrative functions. |
+| AC-8 System use notification | System use banners where the application presents its own entry point. |
+| AC-12 Session termination | The application's own session handling, including idle timeout and logout. Token lifetimes remain enterprise-controlled. |
+| AC-14 Permitted actions without identification | Declaring any unauthenticated endpoints and their justification. The goal is none. |
+| AC-16 Security and privacy attributes | Labeling objects correctly at creation and carrying attributes into indexes, caches, and derived data. The steward decides the label; the product implements it. |
+| SC-16 Transmission of security and privacy attributes | Ensuring every index and data store the application maintains includes the attributes filters depend on. |
 
 ## Rollout
 
