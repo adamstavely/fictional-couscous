@@ -1,0 +1,482 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>THEMIS Platform Alignment</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a doctrine document. One reading column, tier bands, service cards keyed by platform hue. */
+:root{
+  --paper:#f6f7f5; --card:#fdfdfc; --ink:#1b2126; --muted:#5a6470; --line:#d8dcd9;
+  --found:#19586e; --found-soft:#e3edf1; --mission:#8a5a1f; --mission-soft:#f1e9db;
+  --pend:#8a6d1f; --pend-soft:#f2ecd7; --good:#2e6b45; --good-soft:#e2efe6;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --disp:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#12161a; --card:#191f24; --ink:#e6e9e6; --muted:#9aa5ad; --line:#2c343a;
+  --found:#7db8cc; --found-soft:#16303a; --mission:#d2a05c; --mission-soft:#33281a;
+  --pend:#cfae55; --pend-soft:#322a14; --good:#7dbd98; --good-soft:#182e21; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#12161a; --card:#191f24; --ink:#e6e9e6; --muted:#9aa5ad; --line:#2c343a;
+  --found:#7db8cc; --found-soft:#16303a; --mission:#d2a05c; --mission-soft:#33281a;
+  --pend:#cfae55; --pend-soft:#322a14; --good:#7dbd98; --good-soft:#182e21; color-scheme:dark;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16.5px;line-height:1.62;margin:0;padding-block:0 72px;padding-inline:20px}
+.wrap{max-width:960px;margin:0 auto}
+h1,h2,h3,h4{font-family:var(--disp);text-wrap:balance;margin:0}
+p{margin:0}
+a{color:var(--found)}
+.k{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.code{font-family:var(--mono);font-weight:500}
+
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--paper);border-bottom:1px solid var(--line);margin:0 -20px;padding:10px 20px;display:flex;gap:18px;overflow-x:auto;white-space:nowrap}
+nav a{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--muted)}
+nav a:hover{color:var(--ink)}
+
+header.hero{padding:56px 0 36px;border-bottom:2px solid var(--ink)}
+.hero .k{color:var(--found)}
+.hero h1{font-size:clamp(34px,6vw,56px);font-weight:700;letter-spacing:-.015em;line-height:1.04;margin:14px 0 18px}
+.hero p.lede{font-size:19px;max-width:66ch;color:var(--ink)}
+.hero p.lede em{font-style:italic}
+.stats{display:flex;flex-wrap:wrap;gap:0;margin-top:34px;border:1px solid var(--line);background:var(--card)}
+.stat{flex:1 1 150px;min-width:0;padding:16px 18px;border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat b{font-family:var(--disp);font-size:30px;font-weight:700;display:block;font-variant-numeric:tabular-nums}
+.stat span{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+section{padding-top:52px}
+.secHead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:8px}
+.secHead h2{font-size:26px;font-weight:700;letter-spacing:-.01em}
+.secHead .k{margin-left:auto}
+.secIntro{max-width:72ch;color:var(--muted);padding:10px 0 4px;font-size:16px}
+.secIntro b{color:var(--ink);font-weight:600}
+
+.spine{display:flex;flex-direction:column;gap:8px;margin:26px 0 4px}
+.spine .band{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.spine .bandlbl{flex:0 0 150px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center}
+.spine .cells{flex:1 1 300px;min-width:0;display:flex;flex-wrap:wrap;gap:8px}
+.spine .cell{flex:1 1 120px;border:1px solid var(--line);background:var(--card);padding:8px 10px;font-family:var(--disp);font-weight:600;font-size:13.5px}
+.spine .cell small{display:block;font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.06em;color:var(--muted);margin-top:2px}
+.spine .cell.f{border-top:3px solid var(--found)}
+.spine .cell.m{border-top:3px solid var(--mission)}
+.spine .cell.p{border-top:3px solid var(--pend)}
+.spine .cell.g{border-top:3px solid var(--good)}
+
+.plat{margin:30px 0 10px;border:1px solid var(--line);background:var(--card)}
+.plat>.phead{padding:20px 22px 16px;border-bottom:1px solid var(--line)}
+.plat.f>.phead{border-top:4px solid var(--found)}
+.plat.m>.phead{border-top:4px solid var(--mission)}
+.plat.p>.phead{border-top:4px solid var(--pend)}
+.plat.g>.phead{border-top:4px solid var(--good)}
+.phead .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.phead h3{font-size:21px;font-weight:700}
+.pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.f{background:var(--found-soft);color:var(--found)}
+.pill.m{background:var(--mission-soft);color:var(--mission)}
+.pill.p{background:var(--pend-soft);color:var(--pend)}
+.pill.g{background:var(--good-soft);color:var(--good)}
+.phead p.mission{margin-top:8px;max-width:76ch}
+.phead p.note{margin-top:6px;font-size:14px;color:var(--muted);max-width:76ch}
+.svc{padding:18px 22px;border-bottom:1px solid var(--line)}
+.svc:last-child{border-bottom:0}
+.svc .shead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
+.svc .code{font-size:14px}
+.plat.f .svc .code{color:var(--found)}
+.plat.m .svc .code{color:var(--mission)}
+.plat.p .svc .code{color:var(--pend)}
+.plat.g .svc .code{color:var(--good)}
+.svc .role{font-family:var(--disp);font-weight:600;font-size:15.5px}
+.svc .org{margin-left:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.svc p.desc{margin-top:8px;font-size:15.5px;max-width:80ch}
+.svc details{margin-top:10px;border-left:2px solid var(--line);padding-left:14px}
+.svc summary{cursor:pointer;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);list-style:none}
+.svc summary::before{content:"+ "}
+.svc details[open] summary::before{content:"– "}
+.svc summary:focus-visible{outline:2px solid var(--found);outline-offset:2px}
+.svc .spec{display:grid;grid-template-columns:150px 1fr;gap:6px 16px;padding:10px 0 2px;font-size:14px}
+.svc .spec dt{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+.svc .spec dd{margin:0;min-width:0}
+@media (max-width:560px){.svc .spec{grid-template-columns:1fr}.svc .spec dt{padding-top:6px}}
+
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:22px}
+.rule{border:1px solid var(--line);background:var(--card);padding:18px 20px}
+.rule h4{font-size:16px;font-weight:600;margin-bottom:6px}
+.rule p{font-size:14.5px;color:var(--muted)}
+.rule p b{color:var(--ink)}
+
+footer{margin-top:64px;border-top:2px solid var(--ink);padding-top:16px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+footer p{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted)}
+</style>
+
+<div class="wrap">
+<nav aria-label="Sections">
+  <a href="#carve">The carve</a>
+  <a href="#foundation">Foundation tier</a>
+  <a href="#mission">Mission tier</a>
+  <a href="#pending">Substrate</a>
+  <a href="#decisions">Decisions</a>
+</nav>
+
+<header class="hero">
+  <p class="k">THEMIS · Project MACH1 alignment · Rev. 2 · October 2026</p>
+  <h1>From a collection of services to a capability platform layer</h1>
+  <p class="lede">THEMIS began as 38 named services organized by deployment namespace. Under MACH1, namespaces are packaging and platforms are products. This reference realigns every service into a two-tier capability platform layer: five foundation platforms that govern, measure, and record all AI interaction, and three mission platforms that run the intelligence cycle on top of them. The three accountability axes, <em>Origin, Currency, and Trust</em>, remain the reference architecture spanning the layer.</p>
+  <div class="stats">
+    <div class="stat"><b>38</b><span>Services placed</span></div>
+    <div class="stat"><b>5</b><span>Foundation charters</span></div>
+    <div class="stat"><b>3</b><span>Mission charters</span></div>
+    <div class="stat"><b>1</b><span>Existing platform</span></div>
+  </div>
+</header>
+
+<section id="carve">
+  <div class="secHead"><h2>The carve</h2><span class="k">Principle</span></div>
+  <p class="secIntro">A capability platform must answer three questions: <b>who consumes it besides ATHENA</b>, <b>would it survive if ATHENA were retired</b>, and <b>can one team own its roadmap end to end</b>. Services are placed by durable capability, never by namespace. A platform is <b>existing</b> only when it has running code and a named owner; everything else is a charter. Mission platforms are headless-first: every capability ships as APIs and event streams, and the SuperApp surface is one consumer among several, with agents as first-class consumers.</p>
+  <div class="spine" role="img" aria-label="Layer diagram: SuperApp surfaces on top, three mission platforms beneath, five foundation platforms at the base, with the confirmed TESSERA knowledge substrate beneath them">
+    <div class="band"><span class="bandlbl">Experience</span><div class="cells"><div class="cell">SuperApp surfaces<small>consume the mission tier</small></div></div></div>
+    <div class="band"><span class="bandlbl">Mission tier</span><div class="cells">
+      <div class="cell m">Operational research<small>STOA · ORACLE · MIRROR · PYTHIA</small></div>
+      <div class="cell m">Indications &amp; warning<small>6 services</small></div>
+      <div class="cell m">Tasking &amp; dissemination<small>DIKE · IRIS</small></div>
+    </div></div>
+    <div class="band"><span class="bandlbl">Foundation tier</span><div class="cells">
+      <div class="cell f">Provenance &amp; custody<small>build first</small></div>
+      <div class="cell f">AIAS<small>orchestration · PEP</small></div>
+      <div class="cell f">AI governance<small>THEMIS · PDP</small></div>
+      <div class="cell f">Trust calibration<small>flagship</small></div>
+      <div class="cell f">Content integrity<small>Jan value</small></div>
+    </div></div>
+    <div class="band"><span class="bandlbl">Substrate</span><div class="cells"><div class="cell g">TESSERA knowledge substrate<small>existing · confirmed</small></div></div></div>
+  </div>
+</section>
+
+<section id="foundation">
+  <div class="secHead"><h2>Foundation tier</h2><span class="k">Five charters</span></div>
+  <p class="secIntro">The platforms every other platform's contracts depend on. <b>Provenance and AIAS take the Oct–Dec build investment</b>; Governance, Trust Calibration, and Content Integrity charter now and build the thin slices January needs against their schemas.</p>
+
+  <article class="plat f">
+    <div class="phead">
+      <div class="row"><h3>Provenance and custody</h3><span class="pill f">Charter · build Oct–Dec</span><span class="pill f">Name available: ARBOR</span></div>
+      <p class="mission">The evidentiary system of record. Every platform service signs events into it, KAIROS propagation walks its DAG, and every research trail, document attribution, and reasoning record lives in it. Greenfield, but the MOIRAI specification is the most complete in the architecture: signed events, hash chaining, and external timestamp anchoring are build-ready.</p>
+      <p class="note">Deepest dependency in the layer. The event schema and write API are the first deliverables, because no other platform can emit signed events without a schema to sign against.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">Provenance / MOIRAI</span><span class="role">AI content provenance</span><span class="org">Original</span></div>
+      <p class="desc">Signed, hash-chained provenance graph of all AI-touched content. Nodes for session, turn, claim, chunk, document, analyst, model version, and corpus snapshot; edges for produced, retrieved, verified, derived from, attributed to, and superseded by. Multi-analyst attribution per session and a matter-level cross-session query index.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Write path</dt><dd>Validates the cryptographic signature and the prev_event_hash against the actual prior event before accepting; mismatch rejects. All platform services and infrastructure sign via Vault before submission.</dd>
+        <dt>Anchoring</dt><dd>24-hour chain digest to an external RFC 3161 timestamp authority.</dd>
+        <dt>Fallback</dt><dd>Unavailability never stops sessions: producers buffer to Kafka, MOIRAI replays on recovery, and affected sessions carry a buffered flag in the manifest.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">DPS / CODEX</span><span class="role">Document provenance</span><span class="org">Addendum A</span></div>
+      <p class="desc">Paragraph-level attribution of AI contribution in finished intelligence, with bidirectional integration into the authoring environment.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Lifecycle events</dt><dd>AI content insertion carries a full provenance payload with AEGIS scope validation; content edits compute an edit depth score (embedding distance from AI draft to human revision) routed to ALETHEIA; document open triggers a KAIROS currency check across every source in the provenance map.</dd>
+        <dt>Write path</dt><dd>Batched, signed document events through a Kafka write buffer.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">ERAS / LOGOS</span><span class="role">Reasoning audit</span><span class="org">Original</span></div>
+      <p class="desc">Per-turn structured reasoning records: claims, reasoning chain, unsupported claims, and confidence signals, captured asynchronously so response display never blocks. The audit artifact for oversight disclosure, structured as ICD 203 analytic standards documentation.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Unsupported claims</dt><dd>Flags assertions no retrieved evidence in the turn's context supports, cross-referenced against the HERMES retrieval trace; the highest-priority signal routed to MIMIR calibration and ALETHEIA.</dd>
+        <dt>Storage</dt><dd>Elasticsearch claim index; signed capture events published through Kafka into MOIRAI.</dd>
+      </dl></details>
+    </div>
+  </article>
+
+  <article class="plat f">
+    <div class="phead">
+      <div class="row"><h3>AIAS</h3><span class="pill f">Charter · build Oct–Dec</span><span class="pill f">Enforcement point (PEP)</span></div>
+      <p class="mission">The AI orchestration layer in the MACH1 target structure, and the data path every interaction crosses. The charter is partly formalization and partly build: the MCP runtime runs today and gets wrapped behind one platform contract; the gateway, retrieval, and agent services are new. AIAS hosts the enforcement points that evaluate AI Governance decisions.</p>
+      <p class="note">January thin slice: the running runtime behind one contract, with the governance hook live at the gateway. Retrieval and SAGA sequence after.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">MCP runtime</span><span class="role">Tyk gateway · Lumbra orchestration · MCP registry</span><span class="org">Running today</span></div>
+      <p class="desc">The operational MCP plumbing: Tyk as the gateway, Lumbra for orchestration, and the custom-built registry of record for tools. The charter productizes them with an owner, SLOs, and a roadmap, and mounts the MGS policy evaluation hook at the Tyk gateway.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">Inference Gateway</span><span class="role">Model inference routing</span><span class="org">Build</span></div>
+      <p class="desc">Single path for all model inference: routing across vendors, prompt assembly and injection, context capture for downstream audit, and enforcement of KRONOS version pins at the gateway rather than in applications.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">Retrieval</span><span class="role">Corpus search and chunk retrieval</span><span class="org">Build · rename from MIMIR Retrieval</span></div>
+      <p class="desc">Vector store and retrieval service returning chunks with match scores, instrumented end to end by HERMES. Renamed in this alignment to clear the collision with the MIMIR calibration service, which keeps the epithet.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">MOS / SAGA</span><span class="role">Memory orchestration</span><span class="org">Addendum C</span></div>
+      <p class="desc">Owns the logic of what memory means; MOIRAI owns the record. Agent task memory as Redis task state with milestone promotion into MOIRAI, version chains for revisable session summaries, and supervisor routing when analysts produce contradicting graduated claims.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Handoff validation</dt><dd>On handoff, SAGA validates the receiving analyst holds access to all evidence referenced in task state, including completed sub-tasks; any out-of-scope evidence blocks the handoff until resolved.</dd>
+        <dt>Tier inheritance</dt><dd>Every memory artifact inherits the most restrictive protective tier of any contributing evidence, computed at creation from AEGIS records and enforced by AEGIS at retrieval; tier changes propagate to derived artifacts.</dd>
+        <dt>Traceability</dt><dd>MOIRAI reverse DAG traversal reaches memory artifacts through derivation edges SAGA writes at creation.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">Capability bounding</span><span class="role">Agent session envelopes</span><span class="org">Agent-native</span></div>
+      <p class="desc">Enforces the capability envelope a session was granted: a bounded agent cannot acquire tools, scopes, or corpora beyond its grant mid-task. The runtime enforcement side of the grants PRS, SKS, and MGS govern.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">Coalition handling</span><span class="role">Multi-agent coordination</span><span class="org">Agent-native</span></div>
+      <p class="desc">Shared task state and per-agent attribution for agent coalitions, with compartment checks on every inter-agent exchange so a coalition can never launder content across a boundary its members hold separately.</p>
+    </div>
+  </article>
+
+  <article class="plat f">
+    <div class="phead">
+      <div class="row"><h3>AI governance</h3><span class="pill f">Charter · keeps the THEMIS name</span><span class="pill f">Decision point (PDP)</span></div>
+      <p class="mission">The policy decision platform for all AI interaction: compartment enforcement, interaction class policy, adversarial screening, and governance of the prompts, skills, and tools the runtime may load. Structurally independent of AIAS so the referee never reports to a player; decisions are served through Cerbos-pattern decision APIs and evaluated at AIAS enforcement points.</p>
+      <p class="note">January visible value: the gates. No AI interaction touches intelligence without compartment clearance and policy guardrails.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">PCES / AEGIS</span><span class="role">Compartment and classification enforcement</span><span class="org">Original</span></div>
+      <p class="desc">First in every request path, before policy, retrieval, or inference, with no fallback: failure is a hard stop. Requirement scope is a hard boundary, so source intelligence from one requirement cannot appear in a session scoped to another, and conflict-of-interest detection runs against the cleared-personnel registry at session open.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Schema</dt><dd>UNCLASSIFIED through TS_SCI and SAP, with handling caveat enforcement.</dd>
+        <dt>Latency</dt><dd>P99 under 50ms in the synchronous critical path; cache-first requirement scope in Redis, cold lookup from PostgreSQL only on miss or session boundary.</dd>
+        <dt>Record</dt><dd>Append-only, signed classification log of every compartment decision; immutable consent and collection-authority records.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">PGS / NOMOS</span><span class="role">Policy and guardrails</span><span class="org">Original</span></div>
+      <p class="desc">Second in every path, after compartment clearance, failing safe to the most restrictive policy. Interaction classes (intelligence analysis, finished intelligence, research, debriefing prep, expert briefing) each carry configurable constraints: VERITAS mode, dissemination gate thresholds, counter-position requirements, and hardening eligibility.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Rule engine</dt><dd>YAML rules in a version-controlled policy store; changes are PRed, reviewed by the Intelligence Oversight Board, and deployed through formal change control. Policy-as-code, the same pattern as the Cerbos authorization layer.</dd>
+        <dt>Auditability</dt><dd>The policy version is logged into every session manifest and provenance record, enabling policy-stratified audit queries.</dd>
+        <dt>Latency</dt><dd>P99 under 100ms; in-memory evaluation against the cached rule set.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">IAS / SCUDO</span><span class="role">Adversarial input screening</span><span class="org">Addendum A</span></div>
+      <p class="desc">Screens at retrieval ingestion, before chunks enter the candidate pool, because corpus poisoning and prompt injection through fabricated open-source reporting are active denial-and-deception techniques. Clean chunks flow in parallel; only quarantine dispositions block synchronously.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Detection layers</dt><dd>Signature matching against the injection taxonomy (Red Team maintained, reviewed quarterly by the oversight board); embedding similarity against the adversarial pattern corpus; heuristic scoring of imperative-directive patterns such as role reassignment and system prompt override attempts.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">PRS</span><span class="role">Prompt registry</span><span class="org">Interaction layer</span></div>
+      <p class="desc">Prompts as governed artifacts: versioned, signed, and bound to interaction classes, so the runtime loads only registered prompts and every session manifest records which version ran.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">SKS</span><span class="role">Skill governance</span><span class="org">Interaction layer</span></div>
+      <p class="desc">Registration, review, and scope grants for skills before the runtime may load them, with the same version-controlled change discipline as NOMOS policy.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">MGS</span><span class="role">MCP tool governance</span><span class="org">Interaction layer</span></div>
+      <p class="desc">Policy over the MCP runtime AIAS operates: which tools exist in the registry, who may grant them, and what scopes a session may hold. Decisions are evaluated at the Tyk gateway hook; the hook contract is a published platform API, the PDP/PEP interface between this platform and AIAS.</p>
+    </div>
+  </article>
+
+  <article class="plat f">
+    <div class="phead">
+      <div class="row"><h3>Trust calibration</h3><span class="pill f">Charter · flagship</span><span class="pill f">Dissertation core</span></div>
+      <p class="mission">The measurement plane for the human-AI reliance relationship: continuous calibration of analyst trust against measured model accuracy, per domain and per modality. The one genuinely novel platform in the portfolio, consumable by any AI surface in the organization, with service contracts the dissertation instrument depends on.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">TCS / MIMIR</span><span class="role">Trust calibration</span><span class="org">Original</span></div>
+      <p class="desc">Domain-specific Bayesian posterior per claim type, domain, model version, and source type, initialized from vendor benchmarks at cold start and updated from weighted ALETHEIA corrections. Separate calibration streams per modality, since calibration on documents does not transfer to video.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>RAI engine</dt><dd>Seven behavioral input streams combined into a Reliance-Accuracy Index per analyst per domain: verification completion, episode follow-through, reformulation quality, counter-position engagement, inverted gaming probability, pressure mode adjustment, and supervisory confirmation.</dd>
+        <dt>Fallback</dt><dd>On unavailability, surfaces display conservative prior badges rather than model self-report; the degraded state is visible in the session manifest.</dd>
+        <dt>Latency</dt><dd>Score serving from Redis P95 under 50ms; calibration updates batch every 15 minutes from the correction stream.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">FGTS / ALETHEIA</span><span class="role">Feedback and ground truth</span><span class="org">Original</span></div>
+      <p class="desc">The proprietary ground truth corpus built from analyst verification outcomes, with five-factor correction weighting: domain RAI, inverted gaming score, pressure multiplier, supervisory confirmation, and peer agreement. The asset no external vendor can replicate.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Review queue</dt><dd>Three triggers: weight below threshold, contradiction of a prior high-confidence correction, and a high-confidence badge marked incorrect, the highest-consequence correction type. Accept, reject, or escalate by the corpus quality specialist.</dd>
+        <dt>Versioning</dt><dd>Weekly corpus snapshots stored as signed MOIRAI events; rollback selects a prior snapshot and recomputes calibration, tractable because the corpus uses weighted accumulation rather than gradient descent.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">UCS / TYCHE</span><span class="role">Uncertainty decomposition</span><span class="org">Addendum F core</span></div>
+      <p class="desc">Decomposes uncertainty rather than flattening it into one score: what is assessed, what kind of uncertainty attaches to it, and what would change it. Carries the explicit temporal profile CHRONOS projections require (horizon length, whether the subject has decided or the trajectory is constrained, assumption sensitivity) and produces the three-sentence confidence translation IRIS delivers to policymakers.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">OFS / NEMESIS</span><span class="role">Outcome feedback</span><span class="org">Addendum F core</span></div>
+      <p class="desc">Records what actually happened against the claims and assessments that preceded it, closing the accuracy loop calibration depends on. Supplies trajectory validation data to CHRONOS and outcome ground truth to ORACLE, with forecast outcomes and current-state outcomes measured as the different things they are.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">MDS / KRONOS</span><span class="role">Model drift</span><span class="org">Addendum A</span></div>
+      <p class="desc">Polls vendor version endpoints every four hours and fires a version change event within four hours of any release. Queries MOIRAI for all active matters that used the prior version in the trailing window and flags their calibration baselines as potentially stale pending review, never silently reset.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Version pinning</dt><dd>Pinned matters route all inference to the pinned version, enforced at the Inference Gateway rather than in applications; pin release on active requirements requires oversight board acknowledgment.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">CPS · ODS</span><span class="role">Capability profiling · Out-of-distribution screening</span><span class="org">Proposed · Addendum D</span></div>
+      <p class="desc">The proposed competence axis: profiling what each model is measurably good at, and screening whether a query sits inside the model's competence envelope before confident output reaches an analyst. Partially buildable now; hard enforcement is gated on six open research questions, so both carry proposed status in this charter.</p>
+    </div>
+  </article>
+
+  <article class="plat f">
+    <div class="phead">
+      <div class="row"><h3>Content integrity</h3><span class="pill f">Charter</span><span class="pill f">January-visible value</span></div>
+      <p class="mission">Continuous assurance that content entering, produced by, or persisting in analysis is corroborated, current, authentic, and faithfully retrieved. Trust Calibration measures the reliance relationship; this platform measures the content itself, at five points in its lifecycle. Its signature capability is the sensing loop: ARGUS detects external change, KAIROS decides and propagates, and the blast radius lands in the corpus, open documents, and the badge layer without human triage.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">CVS / VERITAS</span><span class="role">Source corroboration</span><span class="org">Addendum A</span></div>
+      <p class="desc">Fires on every model response before rendering, checking citations against the IC intelligence databases, with a hard interrupt on no corroboration. The direct counter to fabricated source reporting, the most acute failure mode in AI-assisted analysis.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Mode</dt><dd>Configured per NOMOS interaction class: mandatory-blocking for intelligence analysis and finished intelligence, advisory for research classes. Blocking mode holds the response until resolution completes or the interrupt fires.</dd>
+        <dt>Latency</dt><dd>P95 under 2 seconds for responses carrying up to 10 citations; no-corroboration interrupts are synchronous and immediate.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">TVS / KAIROS</span><span class="role">Temporal validity</span><span class="org">Original</span></div>
+      <p class="desc">Validity as a continuous quantity: configurable decay functions per document type, with foundational assessments decaying slowly, current intelligence at medium half-life, tactical reporting fast, and debriefings by source reliability rating. Supports point-in-time reconstruction of what a source's validity was when the analyst relied on it.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Propagation</dt><dd>On an active invalidation from ARGUS, walks the MOIRAI provenance DAG to every derived claim and emits validity change events, asynchronously over seconds to minutes depending on DAG depth.</dd>
+        <dt>Corpus extension</dt><dd>ALETHEIA corpus items register alongside active evidence; invalidation of an underlying source fires a corpus decay event routing the item to human review, on a longer half-life profile than live evidence.</dd>
+        <dt>Fallback</dt><dd>Cached validity with an explicit staleness warning; document provenance panels flag validity as unavailable.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">RQS / HERMES</span><span class="role">Retrieval quality</span><span class="org">Original</span></div>
+      <p class="desc">Observability over the AIAS retrieval pipeline, with no analyst-facing surface of its own: rolling precision per query class, domain, and corpus version computed from ALETHEIA verification outcomes, and miss detection that cross-references "not in sources" corrections with retrieval traces to isolate synthesis confabulation.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Validity intersection</dt><dd>Flags queries where low-validity sources were retrieved and used, a quality failure independent of whether the model characterized the source correctly.</dd>
+        <dt>Contract</dt><dd>Requires read access to AIAS retrieval traces, the cross-platform contract to negotiate early.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">KCS / ARGUS</span><span class="role">External currency</span><span class="org">Original</span></div>
+      <p class="desc">The sensor: monitors OSINT aggregators, allied reporting, foreign open media, collection status, and academic feeds for developments that supersede or compromise sources, and emits active invalidation requests to KAIROS.</p>
+      <details><summary>Spec detail</summary><dl class="spec">
+        <dt>Watch lists</dt><dd>Each active requirement registers entities of interest; watched entities are prioritized above general feed monitoring. Polling hourly to every six hours by feed type and priority class, credentials through Vault.</dd>
+        <dt>Confidence scoring</dt><dd>Low-confidence invalidation events surface as advisories rather than triggering immediate propagation.</dd>
+      </dl></details>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">MAS / EIDOLON</span><span class="role">Media authenticity</span><span class="org">Addendum A</span></div>
+      <p class="desc">Ensemble classifiers at media ingestion, before any AI analysis begins: video (facial inconsistency, temporal artifacts, compression patterns, metadata), audio (voice synthesis, speaker verification, acoustic continuity, spectral anomaly), image, and OCR. Risk scores attach to the provenance record and set confidence ceilings downstream; only quarantine dispositions block analysis.</p>
+    </div>
+  </article>
+</section>
+
+<section id="mission">
+  <div class="secHead"><h2>Mission tier</h2><span class="k">Three charters · headless-first · Year 2+ build</span></div>
+  <p class="secIntro">Domain capability platforms running the intelligence cycle on the foundation tier, reimplementing none of it. Each capability ships as <b>APIs and event streams first</b>; SuperApp surfaces and agents consume them on equal terms. Chartering now fixes the map; the build sequence stays Year 2 and beyond.</p>
+
+  <article class="plat m">
+    <div class="phead">
+      <div class="row"><h3>Operational research</h3><span class="pill m">Charter · candidate name: STOA, elevated</span></div>
+      <p class="mission">Orchestrated analysis as a service, on operational tempo: a question and constraints in, a badged and trailed decision-grade product out. Pattern analytics, comparable-matter intelligence, and anticipation are modes of the same engine, which is why they share one platform and one team.</p>
+      <p class="note">Elevating STOA to the platform name means re-epitheting the session service.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">STOA</span><span class="role">Research orchestration</span><span class="org">themis-research</span></div>
+      <p class="desc">Structures research as documented multi-step workflows where a single RAG call retrieves and synthesizes: query decomposition, iterative refinement, sub-question routing, source triangulation, and synthesis, with a complete trail from initial question to final answer. LOGOS captures the reasoning; STOA captures the methodology, and the trail is a first-class MOIRAI provenance artifact. ARGUS is consulted before synthesis is delivered, so retrieved authority affected by external developments never ships unflagged.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">ORACLE</span><span class="role">Outcome analytics</span><span class="org">themis-research</span></div>
+      <p class="desc">Predictive intelligence from the organization's own historical outcomes, where every pattern is transparent, attributable, and traceable to specific matters rather than a black-box score: three prior requirements with this target type were assessed within 45 days at 70 percent confidence accuracy is the shape of what it produces. Requires 200+ historical matters for significance; ALETHEIA correction patterns reveal which predictions analysts trusted versus overrode, and MIMIR flags systematic over- or under-weighting.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">MIRROR</span><span class="role">Similar matter intelligence</span><span class="org">themis-research</span></div>
+      <p class="desc">Finds the most similar historical matters for any active requirement across six weighted dimensions: collection approach, target domain, adversary profile, geopolitical context, source pattern, and geography. Comparables arrive outcome-linked, with complication patterns that arose in similar matters surfaced before they recur, and analyst experience matching for informed staffing. Similarity refreshes continuously as the requirement evolves; 50+ matter floor, with KAIROS validity weighting comparable quality.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">PYTHIA</span><span class="role">Anticipatory intelligence</span><span class="org">themis-research</span></div>
+      <p class="desc">Surfaces the research and evidence a team will need before they know to ask, modeled on the matter's lifecycle stage from MIRROR's similar set and MNEMOSYNE's knowledge of how those matters developed. Pre-executes likely research through STOA so results are ready at need, surfaces deadlines with the lead time comparable matters suggest, and produces the matter intelligence brief, the unified surface through which the mission tier speaks to the analyst. The most downstream service in the architecture.</p>
+    </div>
+  </article>
+
+  <article class="plat m">
+    <div class="phead">
+      <div class="row"><h3>Indications and warning</h3><span class="pill m">Charter · candidate name: PHAROS</span></div>
+      <p class="mission">Continuous sensing over the knowledge and provenance base, emitting warning event streams anything can subscribe to. The architecture's answer to unknown unknowns: it does not eliminate them, it converts more of them into known unknowns faster than an ungoverned platform would. Supervisory-facing first, because several services necessarily operate across requirement compartments and every boundary crossing is an AEGIS decision.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">TRS / CHRONOS</span><span class="role">Temporal reasoning</span><span class="org">themis-warning</span></div>
+      <p class="desc">Forecasting as a distinct analytical mode, epistemically separate from current-state assessment: a 30 percent event occurring is not a failed forecast, while a missed existing capability is a failed assessment. Trajectory models as time-indexed probability distributions labeled as projections, leading indicator monitoring with historical confirmation rates, and scenario space generation with discriminating indicators, all routed through TYCHE's temporal uncertainty profile before any analyst or policymaker sees them.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">ADS / CASSANDRA</span><span class="role">Anomaly detection</span><span class="org">themis-warning</span></div>
+      <p class="desc">Treats deviation from known pattern as intelligence rather than noise: if an adversary program typically generates signature X at development stage Y, and stage Y shows no signature X, that absence surfaces as an analytical signal. Built on ORACLE behavioral baselines and the MNEMOSYNE signature corpus; advisory-only until false positive rates are characterized.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">CGS / ARGUS-LACUNA</span><span class="role">Collection gap mapping</span><span class="org">themis-warning</span></div>
+      <p class="desc">Maps collection coverage per requirement and distinguishes two critically different silences: absence of evidence, where collection is pointed at the target and finding nothing, versus absence of collection, where nothing is pointed there at all. Surfaces a gap indicator on parametric claims in uncollected domains, so an analyst knows whether the AI's silence reflects the target or the platform's blindness.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">WSF / LACHESIS</span><span class="role">Weak signal fusion</span><span class="org">themis-warning</span></div>
+      <p class="desc">Surfaces signal clusters across active requirements that exceed significance thresholds their individual components never reach, the classic failure pattern of dots nobody connected because connecting was nobody's job. Every compartment-crossing signal is gated by AEGIS; supervisory-facing only until crossing policy is formally established. Needs roughly 30 simultaneous active requirements before clusters outrun noise.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">CRF / JANUS</span><span class="role">Cross-requirement correlation</span><span class="org">themis-warning</span></div>
+      <p class="desc">Surfaces the existence of semantic correlations across requirements worked separately: entity overlap through YGGDRASIL resolution, timeline correlation, source overlap, and converging conclusions. Never reveals content across boundaries; it routes the correlation to an analyst or supervisor who holds access to both sides, with AEGIS authoritative in all phases.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">SWS / SENTINEL</span><span class="role">Strategic warning</span><span class="org">themis-warning</span></div>
+      <p class="desc">Watches for signatures of strategic surprise, developments with no direct precedent that would fundamentally change the analytical picture, by fusing CASSANDRA anomalies, LACHESIS clusters, ORACLE deviations, and MNEMOSYNE near-miss knowledge against a strategic indicator registry. Architecturally last, and honestly so: whether surprise signatures can be specified without knowing the surprise is the hardest open design question in the tier.</p>
+    </div>
+  </article>
+
+  <article class="plat m">
+    <div class="phead">
+      <div class="row"><h3>Tasking and dissemination</h3><span class="pill m">Charter · candidate name: KYKLOS</span></div>
+      <p class="mission">The intelligence cycle's bookends as APIs, owning the external integration surface where the cycle touches the outside world: requirements systems upstream, decision-makers downstream. Two services is thin for a platform; the integration contracts are what earn the charter.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">TIS / DIKE</span><span class="role">Tasking integration</span><span class="org">Addendum F · themis-requirements</span></div>
+      <p class="desc">Closes the loop into requirements management: when ARGUS-LACUNA identifies a collection gap, DIKE generates a collection gap request for requirements officers carrying the uncovered domain, the estimated uncertainty reduction from TYCHE, and a suggested approach from ORACLE outcome data. Returns collection effectiveness upstream and tracks the full requirement lifecycle from tasking through outcome. The API agreements with requirements systems make the RM boundary a platform contract.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">PCS / IRIS</span><span class="role">Policymaker communication</span><span class="org">Addendum F · themis-dissemination</span></div>
+      <p class="desc">Translates provenance and calibration metadata into consumer packages for decision-makers: plain-language source basis, the three-sentence confidence translation from TYCHE (what is assessed, what kind of uncertainty, what would change it), key assumptions, falsification indicators, the prior outcome record, and a cryptographic provenance certificate from the custody platform.</p>
+    </div>
+  </article>
+</section>
+
+<section id="pending">
+  <div class="secHead"><h2>Knowledge substrate</h2><span class="k">One existing platform · absorbs themis-knowledge</span></div>
+  <p class="secIntro">TESSERA is the one platform in this alignment whose scope exceeds THEMIS: it is the knowledge substrate of the entire Intelligence OS, and it absorbs the themis-knowledge services as its semantic layer. <b>It is the only component to pass the existence test</b>, which makes it the anchor of the migration story: eight charters build around a substrate that already runs.</p>
+
+  <article class="plat g">
+    <div class="phead">
+      <div class="row"><h3>TESSERA</h3><span class="pill g">Existing · confirmed</span><span class="pill g">Intelligence OS substrate</span></div>
+      <p class="mission">The governed knowledge base every platform reads from and writes to: the intelligence corpora retrieval runs over, the canonical semantics agentic services reason with, and the institutional knowledge the mission tier compounds into. The boundary lines are deliberate. TESSERA owns what is stored and what it means; AIAS owns how it is searched; Provenance and Custody owns what happened to it; HERMES measures the seam between them. Every mission platform rests on this foundation: without a governed ontology, agentic services reason confidently about relationships that are semantically incoherent.</p>
+      <p class="note">The flywheel lives here. Every matter adds corrections, comparables, outcomes, and institutional knowledge to the substrate, an accumulating advantage built on the organization's own data that no external vendor can replicate.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">Corpus management</span><span class="role">Governed intelligence corpora</span><span class="org">Substrate</span></div>
+      <p class="desc">The document and knowledge stores the AIAS retrieval service searches: ingestion, indexing, and versioned corpus snapshots registered as first-class nodes in the provenance graph, so HERMES can track retrieval precision per corpus version and staleness questions have an authoritative answer. Compartment and classification labels attach at ingestion, giving AEGIS scoped retrieval something to enforce against.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">OGS / YGGDRASIL</span><span class="role">Ontology governance</span><span class="org">themis-knowledge</span></div>
+      <p class="desc">The machine-readable, version-controlled canonical entity model for the intelligence domain: entity types, properties, and valid relationships, with cross-INT resolution so target, actor, and entity of interest resolve to one concept across SIGINT, HUMINT, and IMINT reporting. Built on existing IC standards (STIX for threat entities, NSG for geospatial, agency taxonomies) with a governance mechanism for extensions rather than a new ontology from scratch. The semantic grounding prerequisite for the entire mission tier.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">MNEMOSYNE</span><span class="role">Institutional memory</span><span class="org">themis-knowledge</span></div>
+      <p class="desc">Captures and makes queryable the tacit institutional knowledge that otherwise walks out the door: a synthesis layer aggregating ALETHEIA correction patterns, ORACLE outcomes, MIRROR similarity, and STOA research trails into a structured knowledge graph, surfaced when relevant without the analyst needing to know it exists. Aggregates rather than generates; cannot be built until the corpus matures and ORACLE and MIRROR are operational.</p>
+    </div>
+    <div class="svc">
+      <div class="shead"><span class="code">SCRIBE</span><span class="role">Semantic versioning</span><span class="org">themis-knowledge</span></div>
+      <p class="desc">Semantic diff over document versions: reads the MOIRAI graph to attribute AI-contributed content per version and writes version diff records back as edges between document nodes. KAIROS validity informs the classifier, so a clause change resting on a low-validity source is flagged differently from an ordinary edit.</p>
+    </div>
+  </article>
+</section>
+
+<section id="decisions">
+  <div class="secHead"><h2>Standing decisions</h2><span class="k">Cross-cutting</span></div>
+  <div class="rules">
+    <div class="rule"><h4>The existence test</h4><p>A platform is existing only with <b>running code and a named owner</b>. By this test, ARBOR and AIAS moved from the existing column to charters; TESSERA passed, and is the alignment's one existing platform.</p></div>
+    <div class="rule"><h4>PDP / PEP split</h4><p>Governance owns policy decisions; AIAS owns enforcement points. The hook contract at the Tyk gateway is a <b>published platform API</b>, the Cerbos pattern extended from authorization to interaction policy. Teams may merge for capacity; <b>the platforms never do</b>.</p></div>
+    <div class="rule"><h4>The MIMIR rename</h4><p>The calibration service keeps the epithet; the retrieval service in AIAS is <b>renamed during migration</b>. Two services sharing a name across two platforms with two owners is an operational hazard.</p></div>
+    <div class="rule"><h4>Schema before services</h4><p>The provenance <b>event schema and write API ship first</b>. Every other platform's contracts sign against them, so nothing else's interface is final until they exist.</p></div>
+    <div class="rule"><h4>Oct–Dec scope</h4><p>Charter all eight on paper now; <b>build only what January needs</b>: the provenance write path, the AIAS runtime behind one contract with the governance hook live, and the visible slices, gates and badges, on top.</p></div>
+    <div class="rule"><h4>Headless-first mission tier</h4><p>Mission capabilities ship as <b>APIs and event streams</b>; SuperApp surfaces are one consumer among several, and agents are first-class consumers from the first contract.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>THEMIS · Trusted Human-AI Enablement for Mission Intelligence and Safety</p>
+  <p>Supersedes the namespace-organized reference · Axes: Origin · Currency · Trust</p>
+</footer>
+</div>
+
+</body></html>
